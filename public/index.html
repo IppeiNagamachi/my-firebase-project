@@ -1,14 +1,69 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My Firebase Website</title>
-</head>
-<body>
-  <h1>Welcome to My Firebase Website</h1>
-  <p>This is a sample website deployed using Firebase Hosting.</p>
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <title>最小PWA</title>
+  </head>
+  <body>
+    <h1>最小PWAテスト</h1>
 
-  <!-- 「練習」と書く -->
-  <h2>練習</h2>
-</body>
+    <p id="status">接続状態を確認しています。</p>
+    <button id="button">0回</button>
+
+    <p>
+      PWA（Progressive Web Apps）とは、Webサイトをスマートフォンの
+      アプリのように利用できるようにする技術や仕組みのことです。
+    </p>
+
+    <p>
+      Google Chromeでは、アドレスバー右側の「インストール」をクリックします。
+      macOSのSafariでは、「ファイル」から「Dockに追加」を選択します。
+    </p>
+
+    <script>
+      let count = 0;
+
+      const button = document.querySelector("#button");
+      const status = document.querySelector("#status");
+
+      button.addEventListener("click", () => {
+        count += 1;
+        button.textContent = `${count}回`;
+      });
+
+      const updateConnectionStatus = async () => {
+        try {
+          const response = await fetch(
+            `./health.txt?time=${Date.now()}`,
+            { cache: "no-store" }
+          );
+
+          if (!response.ok) {
+            throw new Error("Server unavailable");
+          }
+
+          status.textContent = "サーバーに接続しています。";
+        } catch {
+          status.textContent =
+            "サーバーに接続できません。キャッシュから表示しています。";
+        }
+      };
+
+      updateConnectionStatus();
+      setInterval(updateConnectionStatus, 5000);
+
+      window.addEventListener("online", updateConnectionStatus);
+      window.addEventListener("offline", updateConnectionStatus);
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("./service-worker.js")
+          .catch((error) => console.error("Service Worker registration failed:", error));
+      }
+    </script>
+  </body>
 </html>
-
